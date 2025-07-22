@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 100vw;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Filtros */
+        .filters {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-row input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .filter-row button {
+            padding: 8px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .filter-row button:hover {
+            background: #0056b3;
+        }
+
+        .clear-btn {
+            background: #6c757d !important;
+        }
+
+        .clear-btn:hover {
+            background: #545b62 !important;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* Tabla */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+            border-bottom: 2px solid #dee2e6;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        th:hover {
+            background: #e9ecef;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .sort-icon {
+            margin-left: 5px;
+            font-size: 12px;
+            color: #007bff;
+        }
+
+        .completed {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .pending {
+            color: #dc3545;
+        }
+
+        /* Paginación */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #007bff;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #e9ecef;
+        }
+
+        .pagination button:disabled {
+            color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .pagination .active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .pagination-info {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Lista de TODOs</h2>
+
+    <div class="filters">
+        <div class="filter-row">
+            <input type="text" id="titleFilter" placeholder="Filtrar por título">
+            <input type="text" id="usernameFilter" placeholder="Filtrar por usuario (exacto)">
+            <button onclick="applyFilters()">Buscar</button>
+            <button class="clear-btn" onclick="clearFilters()">Limpiar</button>
+        </div>
+    </div>
+
+    <div id="loading" class="loading">
+        Cargando...
+    </div>
+
+    <div id="tableContainer" style="display: none;">
+        <table>
+            <thead>
+            <tr>
+                <th onclick="sortBy('title')">
+                    Título
+                    <span id="sort-title" class="sort-icon"></span>
+                </th>
+                <th onclick="sortBy('username')">
+                    Usuario
+                    <span id="sort-username" class="sort-icon"></span>
+                </th>
+                <th onclick="sortBy('country')">
+                    País
+                    <span id="sort-country" class="sort-icon"></span>
+                </th>
+                <th onclick="sortBy('completed')">
+                    Estado
+                    <span id="sort-completed" class="sort-icon"></span>
+                </th>
+               <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody id="todoTable">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="noResults" style="display: none;" class="no-results">
+        No se encontraron resultados
+    </div>
+
+    <div id="paginationContainer" class="pagination" style="display: none;">
+        <button id="prevBtn" onclick="previousPage()">&larr; Anterior</button>
+        <div id="pageNumbers"></div>
+        <button id="nextBtn" onclick="nextPage()">Siguiente &rarr;</button>
+        <div class="pagination-info">
+            <span id="pageInfo"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPage = 0;
+    let currentSort = 'id';
+    let currentDirection = 'asc';
+    let currentTitle = '';
+    let currentUsername = '';
+    let totalPages = 0;
+    let totalElements = 0;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTodos();
+    });
+
+    async function loadTodos() {
+        try {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('tableContainer').style.display = 'none';
+            document.getElementById('noResults').style.display = 'none';
+            document.getElementById('paginationContainer').style.display = 'none';
+
+            // Si la columna es 'username' o 'country', enviar el path correcto al backend
+            let sortParam = currentSort;
+            if (currentSort === 'username') sortParam = 'user.username';
+            if (currentSort === 'country') sortParam = 'user.address.country';
+            const params = new URLSearchParams({
+                page: currentPage,
+                size: 10,
+                sortBy: sortParam,
+                sortDirection: currentDirection
+            });
+
+            if (currentTitle) params.append('title', currentTitle);
+            if (currentUsername) params.append('username', currentUsername);
+
+            const response = await fetch(`/api/todos?${params}`);
+
+            if (!response.ok) {
+                throw new Error('Error al cargar los datos');
+            }
+
+            const data = await response.json();
+
+            document.getElementById('loading').style.display = 'none';
+
+            if (data.content && data.content.length > 0) {
+                displayTodos(data.content);
+                updatePagination(data);
+                document.getElementById('tableContainer').style.display = 'block';
+                document.getElementById('paginationContainer').style.display = 'flex';
+            } else {
+                document.getElementById('noResults').style.display = 'block';
+            }
+
+            updateSortIcons();
+
+        } catch (error) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('noResults').innerHTML = 'Error al cargar los datos: ' + error.message;
+            document.getElementById('noResults').style.display = 'block';
+        }
+    }
+
+function displayTodos(todos) {
+    const tbody = document.getElementById('todoTable');
+    tbody.innerHTML = '';
+
+    todos.forEach(todo => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${todo.title || ''}</td>
+            <td>${todo.username || (todo.user && todo.user.username) || ''}</td>
+            <td>${todo.country || ''}</td>
+            <td class="${todo.completed ? 'completed' : 'pending'}">
+                ${todo.completed ? 'Completado' : 'Pendiente'}
+            </td>
+           <td><button onclick="editTodo(${todo.id})">Editar</button></td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+
+    function updatePagination(data) {
+        const page = data.page || {};
+        totalPages = page.totalPages || 0;
+        totalElements = page.totalElements || 0;
+        currentPage = page.number || 0;
+
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageNumbers = document.getElementById('pageNumbers');
+        const pageInfo = document.getElementById('pageInfo');
+
+        prevBtn.disabled = currentPage === 0;
+        nextBtn.disabled = currentPage >= totalPages - 1;
+
+        pageNumbers.innerHTML = '';
+        const startPage = Math.max(0, currentPage - 2);
+        const endPage = Math.min(totalPages - 1, currentPage + 2);
+
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i + 1;
+            btn.onclick = () => goToPage(i);
+            if (i === currentPage) {
+                btn.classList.add('active');
+            }
+            pageNumbers.appendChild(btn);
+        }
+
+        let start, end;
+        if (totalElements === 0) {
+            start = 0;
+            end = 0;
+        } else {
+            start = currentPage * page.size + 1;
+            end = Math.min(start + page.size - 1, totalElements);
+        }
+        pageInfo.textContent = `Mostrando ${start}-${end} de ${totalElements}`;
+    }
+
+    function previousPage() {
+        if (currentPage > 0) {
+            currentPage--;
+            loadTodos();
+        }
+    }
+
+    function nextPage() {
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            loadTodos();
+        }
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        loadTodos();
+    }
+
+    // Ordenamiento
+    function sortBy(column) {
+        if (currentSort === column) {
+            currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort = column;
+            currentDirection = 'asc';
+        }
+        currentPage = 0;
+        loadTodos();
+    }
+
+    function updateSortIcons() {
+        document.querySelectorAll('.sort-icon').forEach(icon => {
+            icon.textContent = '';
+        });
+
+        const currentIcon = document.getElementById(`sort-${currentSort}`);
+        if (currentIcon) {
+            currentIcon.textContent = currentDirection === 'asc' ? '↑' : '↓';
+        }
+    }
+
+    function applyFilters() {
+        currentTitle = document.getElementById('titleFilter').value.trim();
+        currentUsername = document.getElementById('usernameFilter').value.trim();
+        currentPage = 0;
+        loadTodos();
+    }
+
+    function clearFilters() {
+        document.getElementById('titleFilter').value = '';
+        document.getElementById('usernameFilter').value = '';
+        currentTitle = '';
+        currentUsername = '';
+        currentPage = 0;
+        loadTodos();
+    }
+
+    document.getElementById('titleFilter').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            applyFilters();
+        }
+    });
+
+    document.getElementById('usernameFilter').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            applyFilters();
+        }
+    });
+
+    function editTodo(id) {
+        window.location.href = `/todos/create?id=${id}`;
+    }
+</script>
+</body>
+</html>

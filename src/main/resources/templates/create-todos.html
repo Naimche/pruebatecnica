@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Crear TODO</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; }
+        .container { max-width: 900px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin-bottom: 25px; }
+        form { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; }
+        label { font-weight: bold; margin-bottom: 5px; }
+        select, input[type=text] { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px; }
+        button { padding: 10px 0; background: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .error { color: #dc3545; margin-top: 5px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Crear TODO</h2>
+    <form id="createTodoForm">
+        <div style="flex: 1 1 250px; min-width: 200px; margin-bottom: 0;">
+            <label for="userSelect">Usuario</label>
+            <select id="userSelect" required style="width: 100%;"></select>
+        </div>
+        <div style="flex: 2 1 400px; min-width: 250px; margin-bottom: 0;">
+            <label for="titleInput">Título</label>
+            <input type="text" id="titleInput" maxlength="200" required placeholder="Título del TODO" style="width: 100%;" oninput="if(this.value.length>200)this.value=this.value.slice(0,200)">
+        </div>
+        <div style="flex: 1 1 200px; min-width: 150px; margin-bottom: 0;">
+            <label for="completedSelect">Estado</label>
+            <select id="completedSelect" required style="width: 100%;">
+                <option value="false">Not completed</option>
+                <option value="true">Completed</option>
+            </select>
+        </div>
+        <div style="flex: 1 1 150px; min-width: 120px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 0; align-items: flex-end;">
+            <button type="submit" id="submitBtn" style="width: 100%;">Crear TODO</button>
+            <div id="formError" class="error" style="display:none;"></div>
+        </div>
+    </form>
+</div>
+<script>
+async function loadUsers() {
+    try {
+        const res = await fetch('/api/users');
+        if (!res.ok) throw new Error('No se pudieron cargar los usuarios');
+        const users = await res.json();
+        const select = document.getElementById('userSelect');
+        select.innerHTML = '';
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.id;
+            opt.textContent = u.username;
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        const select = document.getElementById('userSelect');
+        select.innerHTML = '<option value="">Error cargando usuarios</option>';
+    }
+}
+
+function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
+let editingId = getQueryParam('id');
+
+window.addEventListener('DOMContentLoaded', async function() {
+    await loadUsers();
+    if (editingId) {
+        try {
+            const res = await fetch(`/api/todos/id/${editingId}`);
+            if (!res.ok) throw new Error('No se pudo cargar el TODO');
+            const todo = await res.json();
+            document.getElementById('titleInput').value = todo.title || '';
+            document.getElementById('completedSelect').value = todo.completed ? 'true' : 'false';
+            document.getElementById('userSelect').value = todo.userId || (todo.user && todo.user.id) || '';
+            document.getElementById('submitBtn').textContent = 'Guardar cambios';
+            document.querySelector('h2').textContent = 'Editar TODO';
+        } catch (e) {
+            document.getElementById('formError').textContent = e.message;
+            document.getElementById('formError').style.display = 'block';
+        }
+    }
+});
+
+ document.getElementById('createTodoForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const userId = document.getElementById('userSelect').value;
+    const title = document.getElementById('titleInput').value.trim();
+    const completed = document.getElementById('completedSelect').value;
+    const errorDiv = document.getElementById('formError');
+    errorDiv.style.display = 'none';
+
+    if (!userId) {
+        errorDiv.textContent = 'Selecciona un usuario.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    if (!title || title.length > 200) {
+        errorDiv.textContent = 'El título es obligatorio y debe tener menos de 200 caracteres.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    try {
+        let url = '/api/todos';
+        let method = 'POST';
+        let successMsg = 'TODO creado correctamente';
+        if (editingId) {
+            url = `/api/todos/update/${editingId}`;
+            method = 'PATCH';
+            successMsg = 'TODO actualizado correctamente';
+        }
+        const res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: userId,
+                title: title,
+                completed: completed === 'true'
+            })
+        });
+        if (!res.ok) throw new Error(editingId ? 'No se pudo actualizar el TODO' : 'No se pudo crear el TODO');
+        if (!editingId) {
+            document.getElementById('titleInput').value = '';
+            document.getElementById('completedSelect').value = 'false';
+        }
+        errorDiv.style.display = 'none';
+        alert(successMsg);
+        window.location.href = '/todos';
+    } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = 'block';
+    }
+});
+
+// Cargar usuarios al inicio
+window.addEventListener('DOMContentLoaded', loadUsers);
+</script>
+</body>
+</html>
