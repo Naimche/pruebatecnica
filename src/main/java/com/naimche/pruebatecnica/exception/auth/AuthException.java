@@ -1,14 +1,12 @@
 package com.naimche.pruebatecnica.exception.auth;
 
-public class AuthException extends RuntimeException {
-    private final String code;
+import com.naimche.pruebatecnica.exception.BaseApplicationException;
+
+public class AuthException extends BaseApplicationException {
 
     public AuthException(String code, String message) {
-        super(message);
-        this.code = code;
+        super(code, message);
     }
 
-    public String getCode() {
-        return code;
-    }
+
 }

@@ -1,14 +1,12 @@
 package com.naimche.pruebatecnica.exception.user;
 
-public class UserException extends RuntimeException {
-    private final String code;
+import com.naimche.pruebatecnica.exception.BaseApplicationException;
+
+public class UserException extends BaseApplicationException {
 
     public UserException( String code, String message) {
-        super(message);
-        this.code = code;
+        super(code, message);
     }
 
-    public String getCode() {
-        return code;
-    }
+
 }

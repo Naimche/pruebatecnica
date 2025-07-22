@@ -1,14 +1,10 @@
 package com.naimche.pruebatecnica.exception.todo;
 
-public class TodoException extends RuntimeException {
-    private final String code;
+import com.naimche.pruebatecnica.exception.BaseApplicationException;
 
-
+public class TodoException extends BaseApplicationException {
     public TodoException(String code, String message) {
-        super(message);
-        this.code = code;
+        super(code, message);
     }
-    public String getCode() {
-        return code;
-    }
+
 }
