@@ -50,19 +50,23 @@ public class TodoService {
         User authenticatedUser = userRepository.findByUsername(userId)
                 .orElseThrow(UserNotFound::new);
 
-        User user = userRepository.findById(todoDto.getUserId())
+        User newUser = userRepository.findById(todoDto.getUserId())
                 .orElseThrow(UserNotFound::new);
 
-        if (!Objects.equals(authenticatedUser.getId(), user.getId())) {
+        Todo todoCheck = todoRepository.findById(todoDto.getId()).orElseThrow(TodoNotFound::new);
+        Long realUserId = todoCheck.getUser().getId();
+        if (!Objects.equals(realUserId, authenticatedUser.getId())) {
             throw new NotAuthorizedException();
         }
 
         Todo todo = TodoMapper.INSTANCE.toEntity(todoDto);
-        todo.setUser(user);
+        todo.setUser(newUser);
 
         Todo savedTodo = todoRepository.save(todo);
         return TodoMapper.INSTANCE.toDto(savedTodo);
     }
+
+
 
     public TodoDto saveWithoutAuth(TodoDto todoDto) {
         User user = userRepository.findById(todoDto.getUserId())
@@ -70,6 +74,9 @@ public class TodoService {
 
         Todo todo = TodoMapper.INSTANCE.toEntity(todoDto);
         todo.setUser(user);
+        if (todo.getTitle() == null || todo.getTitle().isEmpty() || todo.getTitle().length() > maxTitleLength) {
+            throw new IllegalArgumentException("Title cannot be empty");
+        }
         Todo savedTodo = todoRepository.save(todo);
         return TodoMapper.INSTANCE.toDto(savedTodo);
     }

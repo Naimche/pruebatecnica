@@ -66,8 +66,24 @@ java -jar target/pruebatecnica-0.0.1-SNAPSHOT.jar
 ./mvnw.cmd spring-boot:run
 ```
 
-La aplicación estará disponible en: `http://localhost:8080/login`
+La aplicación estará disponible en: `http://localhost:8080`
 
+
+## 📝 Información adicional
+
+Para facilitar la prueba técnica, he establecido datos iniciales que se cargan automáticamente.
+
+> **Nota:** Estos datos pueden deshabilitarse configurando las siguientes propiedades en `application.properties`:
+
+```properties
+spring.jpa.defer-datasource-initialization=true -> false
+spring.sql.init.mode=always -> never
+```
+### Credenciales de acceso
+
+- **Usuario:** el que se muestra en la tabla de datos iniciales.
+- **Contraseña:** `12345678!`
+---
 ## 🗄️ Configuración de Base de Datos
 
 ### Profiles Disponibles
