@@ -1,7 +1,7 @@
 package com.naimche.pruebatecnica.mapper;
 
 import com.naimche.pruebatecnica.dto.TodoDto;
-import com.naimche.pruebatecnica.model.Todo;
+import com.naimche.pruebatecnica.entity.Todo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;

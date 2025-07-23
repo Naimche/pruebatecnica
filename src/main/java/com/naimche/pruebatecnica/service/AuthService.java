@@ -7,6 +7,7 @@ import com.naimche.pruebatecnica.exception.auth.UserNameAlreadyExistsException;
 import com.naimche.pruebatecnica.exception.auth.WeakPasswordException;
 import com.naimche.pruebatecnica.mapper.UserMapper;
 import com.naimche.pruebatecnica.repository.AuthRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +21,8 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${bypass.password:false}")
+    private boolean bypassPassword;
 
     public AuthService(AuthRepository authRepository, AuthenticationManager authenticationManager, JwtService jwtService, PasswordEncoder passwordEncoder) {
         this.authRepository = authRepository;
@@ -45,7 +48,8 @@ public class AuthService {
     }
 
     public String authenticate(AuthRequestDto request) {
-        if (!Boolean.parseBoolean(System.getProperty("bypass.password"))) {
+        // Bypass authentication if the system property is set (DEV MODE)
+        if (!bypassPassword) {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getUsername(),

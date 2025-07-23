@@ -1,6 +1,6 @@
 package com.naimche.pruebatecnica.repository;
 
-import com.naimche.pruebatecnica.model.User;
+import com.naimche.pruebatecnica.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

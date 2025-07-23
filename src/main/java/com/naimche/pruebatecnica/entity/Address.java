@@ -1,4 +1,4 @@
-package com.naimche.pruebatecnica.model;
+package com.naimche.pruebatecnica.entity;
 
 import jakarta.persistence.Embeddable;
 

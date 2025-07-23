@@ -6,6 +6,7 @@ import com.naimche.pruebatecnica.dto.CreateUserDto;
 import com.naimche.pruebatecnica.dto.UserDto;
 import com.naimche.pruebatecnica.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    @Value("${security.httpsEnabled}")
+    private boolean httpsEnabled;
+
 
     private final AuthService service;
     public AuthController(AuthService service) {
@@ -36,7 +41,7 @@ public class AuthController {
 
         ResponseCookie jwtCookie = ResponseCookie.from("jwt", authResponse)
                 .httpOnly(true)
-                .secure(false)
+                .secure(httpsEnabled)
                 .path("/")
                 .maxAge(24 * 60 * 60) // 1 día
                 .sameSite("Strict")

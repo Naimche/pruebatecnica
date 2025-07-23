@@ -7,6 +7,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,8 +42,7 @@ public class TodoController {
 
     @PostMapping
     public ResponseEntity<TodoDto> createTodo(@RequestBody TodoDto todoDto) {
-        service.save(todoDto);
-        return ResponseEntity.ok(todoDto);
+        return ResponseEntity.ok(service.saveWithoutAuth(todoDto));
     }
 
     @PatchMapping
@@ -50,6 +51,8 @@ public class TodoController {
         if (todoDto == null || id == null) {
             return ResponseEntity.badRequest().build();
         }
+
+
         todoDto.setId(id);
         TodoDto updatedTodo = service.save(todoDto);
         return ResponseEntity.ok(updatedTodo);
@@ -63,5 +66,15 @@ public class TodoController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(todo);
+    }
+
+    @DeleteMapping
+    @RequestMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteTodo(@PathVariable Long id) {
+        boolean deleted = service.delete(id);
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
     }
 }
