@@ -1,6 +1,6 @@
 package com.naimche.pruebatecnica.repository;
 
-import com.naimche.pruebatecnica.model.Todo;
+import com.naimche.pruebatecnica.entity.Todo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

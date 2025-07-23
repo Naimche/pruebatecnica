@@ -1,6 +1,6 @@
 package com.naimche.pruebatecnica.dto;
 
-import com.naimche.pruebatecnica.model.Address;
+import com.naimche.pruebatecnica.entity.Address;
 
 public class CreateUserDto {
 

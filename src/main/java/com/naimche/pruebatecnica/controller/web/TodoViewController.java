@@ -7,6 +7,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class TodoViewController {
 
+    @GetMapping("/login")
+    public String loginView() {
+        return "login";
+    }
+
+    @GetMapping("/")
+    public String path() {
+        return "login";
+    }
+
     @GetMapping("/todos")
     public String todosView() {
         return "todos";

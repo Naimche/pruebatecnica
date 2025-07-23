@@ -72,6 +72,14 @@
             background: #545b62 !important;
         }
 
+        .create-btn {
+            background: #28a745 !important;
+        }
+
+        .create-btn:hover {
+            background: #1e7e34 !important;
+        }
+
         /* Loading */
         .loading {
             text-align: center;
@@ -169,6 +177,20 @@
             color: #666;
             font-size: 14px;
         }
+
+        /* Botones de acción */
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -181,6 +203,7 @@
             <input type="text" id="usernameFilter" placeholder="Filtrar por usuario (exacto)">
             <button onclick="applyFilters()">Buscar</button>
             <button class="clear-btn" onclick="clearFilters()">Limpiar</button>
+            <button class="create-btn" onclick="createTodo()">Crear TODO</button>
         </div>
     </div>
 
@@ -209,6 +232,7 @@
                     <span id="sort-completed" class="sort-icon"></span>
                 </th>
                <th>Acciones</th>
+               <th>Eliminar</th>
             </tr>
             </thead>
             <tbody id="todoTable">
@@ -306,6 +330,7 @@ function displayTodos(todos) {
                 ${todo.completed ? 'Completado' : 'Pendiente'}
             </td>
            <td><button onclick="editTodo(${todo.id})">Editar</button></td>
+           <td><button onclick="deleteTodo(${todo.id})" class="delete-btn">Borrar</button></td>
         `;
         tbody.appendChild(row);
     });
@@ -423,6 +448,38 @@ function displayTodos(todos) {
 
     function editTodo(id) {
         window.location.href = `/todos/create?id=${id}`;
+    }
+
+    function createTodo() {
+        window.location.href = '/todos/create';
+    }
+
+    async function deleteTodo(id) {
+        // Popup de confirmación simple
+        const confirmed = confirm("Are you sure? This operation cannot be undone");
+        
+        if (!confirmed) {
+            return; // No hacer nada si cancela
+        }
+        
+        try {
+            const response = await fetch(`/api/todos/delete/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            if (response.ok) {
+                // Recargar la lista después de borrar
+                loadTodos();
+                alert('TODO eliminado exitosamente');
+            } else {
+                alert('Error al eliminar el TODO');
+            }
+        } catch (error) {
+            alert('Error de conexión al eliminar el TODO');
+        }
     }
 </script>
 </body>
