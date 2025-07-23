@@ -73,7 +73,7 @@ La aplicación estará disponible en: `http://localhost:8080`
 
 Para facilitar la prueba técnica, he establecido datos iniciales que se cargan automáticamente.
 
-> **Nota:** Estos datos pueden deshabilitarse configurando las siguientes propiedades en `application.properties`:
+> **Nota:** Estos datos pueden deshabilitarse configurando las siguientes propiedades en `application-dev.properties`:
 
 ```properties
 spring.jpa.defer-datasource-initialization=true -> false
