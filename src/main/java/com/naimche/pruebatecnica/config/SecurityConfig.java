@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
-                        .requestMatchers("/api/auth/**", "/", "/login").permitAll()
+                        .requestMatchers("/api/auth/**", "/", "/login" ,"/todos/**", "/api/todos", "/api/todos/update", "/api/todos/id/**", "/api/users").permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )

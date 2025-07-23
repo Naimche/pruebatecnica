@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Crear TODO</title>
@@ -28,6 +28,32 @@
             color: #333;
             text-align: center;
             margin-bottom: 30px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header-container h2 {
+            margin: 0;
+            flex: 1;
+        }
+
+        .header-login-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .header-login-btn:hover {
+            background: #138496;
         }
 
         form { 
@@ -63,6 +89,14 @@
             background: #0056b3; 
         }
 
+        .login-btn {
+            background: #17a2b8;
+        }
+
+        .login-btn:hover {
+            background: #138496;
+        }
+
         .error { 
             color: #dc3545; 
             margin-top: 5px; 
@@ -71,7 +105,10 @@
 </head>
 <body>
 <div class="container">
-    <h2>Crear TODO</h2>
+    <div class="header-container">
+        <h2>Crear TODO</h2>
+        <button type="button" class="header-login-btn" onclick="goToLogin()">Iniciar Sesión</button>
+    </div>
     <form id="createTodoForm">
         <div style="flex: 1 1 250px; min-width: 200px; margin-bottom: 0;">
             <label for="userSelect">Usuario</label>
@@ -177,7 +214,7 @@ window.addEventListener('DOMContentLoaded', async function() {
                 completed: completed === 'true'
             })
         });
-        if (!res.ok) throw new Error(editingId ? 'No se pudo actualizar el TODO' : 'No se pudo crear el TODO');
+        if (!res.ok) throw new Error(editingId ? 'No esta autorizado para modificar este TODO' : 'No se pudo crear el TODO');
         if (!editingId) {
             document.getElementById('titleInput').value = '';
             document.getElementById('completedSelect').value = 'false';
@@ -190,6 +227,10 @@ window.addEventListener('DOMContentLoaded', async function() {
         errorDiv.style.display = 'block';
     }
 });
+
+function goToLogin() {
+    window.location.href = '/login';
+}
 
 // Cargar usuarios al inicio
 window.addEventListener('DOMContentLoaded', loadUsers);

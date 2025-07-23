@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,6 +78,14 @@
 
         .create-btn:hover {
             background: #1e7e34 !important;
+        }
+
+        .login-btn {
+            background: #17a2b8 !important;
+        }
+
+        .login-btn:hover {
+            background: #138496 !important;
         }
 
         /* Loading */
@@ -204,6 +212,7 @@
             <button onclick="applyFilters()">Buscar</button>
             <button class="clear-btn" onclick="clearFilters()">Limpiar</button>
             <button class="create-btn" onclick="createTodo()">Crear TODO</button>
+            <button class="login-btn" onclick="goToLogin()">Iniciar Sesión</button>
         </div>
     </div>
 
@@ -454,6 +463,10 @@ function displayTodos(todos) {
         window.location.href = '/todos/create';
     }
 
+    function goToLogin() {
+        window.location.href = '/login';
+    }
+
     async function deleteTodo(id) {
         // Popup de confirmación simple
         const confirmed = confirm("Are you sure? This operation cannot be undone");
@@ -475,7 +488,7 @@ function displayTodos(todos) {
                 loadTodos();
                 alert('TODO eliminado exitosamente');
             } else {
-                alert('Error al eliminar el TODO');
+                alert('No tienes autorizacion para eliminar este TODO');
             }
         } catch (error) {
             alert('Error de conexión al eliminar el TODO');

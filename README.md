@@ -43,14 +43,9 @@ spring.datasource.username=tu_usuario
 spring.datasource.password=tu_contraseña
 ```
 
-## 3. Instalar dependencias
-### Opción 1: Usando Maven
+### 3. Instalar dependencias
 ```bash
 mvn clean install
-```
-### Opción 2: Usando Maven Wrapper (Windows)
-```bash
-./mvnw.cmd clean install
 ```
 
 ## 🚀 Ejecución de la Aplicación
@@ -252,6 +247,21 @@ http://localhost:8080/api
    }
 }
 ```
+
+
+#### Iniciar Sesion 
+- **Endpoint:** `POST /api/auth/login`
+- **Descripción:** inicio de sesion de un usuario existente en el sistema
+- **Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+    "username": "naimche",
+    "password": "Amig12123123123!"
+}
+```
+**Response:** `200 OK` si es exitoso, `403 Forbidden` si las credenciales son invalidas.
 
 ### 👥 Usuarios
 

@@ -14,7 +14,7 @@ public class TodoViewController {
 
     @GetMapping("/")
     public String path() {
-        return "login";
+        return "todos";
     }
 
     @GetMapping("/todos")
