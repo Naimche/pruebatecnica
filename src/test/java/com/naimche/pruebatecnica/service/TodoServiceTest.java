@@ -104,10 +104,23 @@ class TodoServiceTest {
         @Test
         @DisplayName("Should save todo when user authorized")
         void shouldSaveTodoWhenUserAuthorized() {
+            // Setup authenticated user
             when(userRepository.findByUsername("authUser")).thenReturn(Optional.of(authenticatedUser));
             when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+            // Setup todoDto with an ID and title
+            todoDto.setId(1L);
+            todoDto.setTitle("Some valid title");
+
+            // Mock the existing todo in repository
+            Todo existingTodo = new Todo();
+            existingTodo.setId(1L);
+            existingTodo.setUser(user);  // Make sure user matches
+
+            when(todoRepository.findById(1L)).thenReturn(Optional.of(existingTodo));
             when(todoRepository.save(any(Todo.class))).thenAnswer(i -> i.getArgument(0));
 
+            // Call the method under test
             TodoDto saved = todoService.save(todoDto);
 
             assertThat(saved).isNotNull();
@@ -117,15 +130,42 @@ class TodoServiceTest {
         @Test
         @DisplayName("Should throw NotAuthorizedException when user IDs differ")
         void shouldThrowNotAuthorizedException() {
-            user.setId(2L);
-            when(userRepository.findByUsername("authUser")).thenReturn(Optional.of(authenticatedUser));
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            // Setup authenticated user with ID 1L
+            authenticatedUser.setId(1L);
 
+            // Setup another user (owner of the todo) with ID 2L
+            user.setId(2L);
+
+            // Prepare todoDto with id and userId
+            todoDto.setId(1L);
+            todoDto.setUserId(2L);  // belongs to user with id 2L
+            todoDto.setTitle("Some title");
+
+            // Mock SecurityContextHolder
+            Authentication auth = mock(Authentication.class);
+            when(auth.getName()).thenReturn("authUser");
+            SecurityContext securityContext = mock(SecurityContext.class);
+            when(securityContext.getAuthentication()).thenReturn(auth);
+            SecurityContextHolder.setContext(securityContext);
+
+            // Mock userRepository to return authenticatedUser and user
+            when(userRepository.findByUsername("authUser")).thenReturn(Optional.of(authenticatedUser));
+            when(userRepository.findById(2L)).thenReturn(Optional.of(user));
+
+            // Mock todoRepository.findById to return a todo owned by 'user' (ID=2L)
+            Todo existingTodo = new Todo();
+            existingTodo.setId(1L);
+            existingTodo.setUser(user);  // owner has ID 2L
+
+            when(todoRepository.findById(1L)).thenReturn(Optional.of(existingTodo));
+
+            // Now expect NotAuthorizedException since authenticatedUser.id != todo owner.id
             assertThatThrownBy(() -> todoService.save(todoDto))
                     .isInstanceOf(NotAuthorizedException.class);
 
             verify(todoRepository, never()).save(any());
         }
+
 
         @Test
         @DisplayName("Should throw UserNotFound when authenticated user missing")
@@ -162,7 +202,7 @@ class TodoServiceTest {
 
             TodoDto todoDto = new TodoDto();
             todoDto.setUserId(1L);
-
+            todoDto.setTitle("Sample Todo Title");
             when(userRepository.findById(1L)).thenReturn(Optional.of(user));
             when(todoRepository.save(any(Todo.class))).thenAnswer(i -> i.getArgument(0));
 
